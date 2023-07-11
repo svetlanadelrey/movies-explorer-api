@@ -1,7 +1,7 @@
 ## Ссылки на проект
 
-IP <>
+IP <51.250.95.211>
 
-Frontend https://
+Frontend https://movies-svetlanadelrey.nomoredomains.work
 
-Backend https://
+Backend https://api.movies-svetlanadelrey.nomoredomains.work
