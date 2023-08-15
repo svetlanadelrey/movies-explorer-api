@@ -9,6 +9,10 @@ const errorHandler = require('./middlewares/error-handler');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { limiter } = require('./middlewares/limiter');
 
+const allowedCors = [
+  'localhost:3000',
+];
+
 const { PORT = 3000 } = process.env;
 const app = express();
 
@@ -18,6 +22,14 @@ app.use(helmet());
 app.use(express.json());
 app.use(requestLogger);
 app.use(cors());
+app.use((req, res, next) => {
+  const { origin } = req.headers;
+  if (allowedCors.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+
+  next();
+});
 app.use(limiter);
 app.use(router);
 app.use(errorLogger);
