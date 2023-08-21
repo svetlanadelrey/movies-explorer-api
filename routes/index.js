@@ -10,11 +10,10 @@ const NotFoundError = require('../errors/not-found-err');
 router.post('/signup', validateCreateUser, createUser);
 router.post('/signin', validateLogin, loginUser);
 
-router.use(auth);
-router.use('/', userRouter);
-router.use('/', movieRouter);
+router.use('/', auth, userRouter);
+router.use('/', auth, movieRouter);
 
-router.all('/*', (req, res, next) => {
+router.all('/*', auth, (req, res, next) => {
   next(new NotFoundError('Запрашиваемая страница не существует'));
 });
 
