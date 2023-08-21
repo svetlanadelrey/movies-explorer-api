@@ -9,10 +9,6 @@ const errorHandler = require('./middlewares/error-handler');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { limiter } = require('./middlewares/limiter');
 
-const allowedCors = [
-  'localhost:3000',
-];
-
 const { PORT = 3000 } = process.env;
 const app = express();
 
@@ -23,11 +19,9 @@ app.use(express.json());
 app.use(requestLogger);
 app.use(cors());
 app.use((req, res, next) => {
-  const { origin } = req.headers;
-  if (allowedCors.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
-
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
   next();
 });
 app.use(limiter);
