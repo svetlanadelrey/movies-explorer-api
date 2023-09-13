@@ -60,7 +60,7 @@ const deleteMovie = (req, res, next) => {
       if (movie.owner.toString() !== owner) {
         throw new ForbiddenError('Нет доступа');
       }
-      Movie.deleteOne()
+      Movie.deleteOne({ _id: movie._id })
         .then(() => res.send({ message: 'Фильм удален' }))
         .catch(next);
     })
