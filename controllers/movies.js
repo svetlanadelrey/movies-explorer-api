@@ -51,25 +51,19 @@ const createMovie = (req, res, next) => {
 };
 
 const deleteMovie = (req, res, next) => {
-  const owner = req.user._id;
-  Movie.findById(req.params._id)
+  const { movieId } = req.params;
+  Movie.findById(movieId)
     .then((movie) => {
       if (!movie) {
         throw new NotFoundError('Фильм не найден');
       }
-      if (movie.owner.toString() !== owner) {
+      if (!movie.owner.equals(req.user._id)) {
         throw new ForbiddenError('Нет доступа');
       }
       Movie.deleteOne({ _id: movie._id })
-        .then(() => res.send({ message: 'Фильм удален' }))
-        .catch(next);
+        .then(() => res.send({ message: 'Фильм удален' }));
     })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        return next(new BadRequestError('Введены некорректные данные'));
-      }
-      return next(err);
-    });
+    .catch(next);
 };
 
 module.exports = { getMovies, createMovie, deleteMovie };
