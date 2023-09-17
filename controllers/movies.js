@@ -51,27 +51,18 @@ const createMovie = (req, res, next) => {
 };
 
 const deleteMovie = (req, res, next) => {
-  Movie.findById(req.params._id)
+  const { movieId } = req.params._id;
+  Movie.findById(movieId)
+    .orFail(new NotFoundError('Данные не найдены'))
     .then((movie) => {
-      if (!movie) {
-        throw new NotFoundError('Фильм не найден');
-      }
-      // проверяем соответствие owner фильма и id тек.ользователя
       if (!movie.owner.equals(req.user._id)) {
         return next(new ForbiddenError('Доступ запрещен'));
       }
-      return Movie
-        .findByIdAndDelete(req.params._id)
-        .orFail(() => new NotFoundError('Фильм не найден'))
-        .then(() => res.send({ message: 'Фильма удален' }));
+      return movie
+        .deleteOne({ _id: movie._id })
+        .then(() => res.send({ message: 'Фильм удалён' }));
     })
-    .catch((err) => {
-      if (err.name === 'CactError') {
-        next(new BadRequestError('Некорректные данные'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports = { getMovies, createMovie, deleteMovie };
