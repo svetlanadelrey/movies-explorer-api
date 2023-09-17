@@ -53,15 +53,14 @@ const createMovie = (req, res, next) => {
 const deleteMovie = (req, res, next) => {
   const { movieId } = req.params;
   Movie.findById(movieId)
+    .orFail(new NotFoundError('Данные не найдены'))
     .then((movie) => {
-      if (!movie) {
-        throw new NotFoundError('Фильм не найден');
-      }
       if (!movie.owner.equals(req.user._id)) {
-        throw new ForbiddenError('Нет доступа');
+        return next(new ForbiddenError('Доступ запрещен'));
       }
-      Movie.deleteOne({ _id: movie._id })
-        .then(() => res.send({ message: 'Фильм удален' }));
+      return movie
+        .deleteOne({ _id: movie._id })
+        .then(() => res.send({ message: 'Фильм удалён' }));
     })
     .catch(next);
 };
