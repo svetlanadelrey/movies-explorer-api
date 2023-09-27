@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Movie = require('../models/movie');
 const BadRequestError = require('../errors/bad-request-err');
 const NotFoundError = require('../errors/not-found-err');
-const ForbiddenError = require('../errors/forbidden-err');
 
 const getMovies = (req, res, next) => {
   const owner = req.user._id;
@@ -51,18 +50,23 @@ const createMovie = (req, res, next) => {
 };
 
 const deleteMovie = (req, res, next) => {
-  const { movieId } = req.params;
-  Movie.findById(movieId)
-    .orFail(new NotFoundError('Фильм не найден'))
+  const owner = req.user._id;
+  Movie.findOneAndDelete({ _id: req.params._id, owner })
     .then((movie) => {
-      if (!movie.owner.equals(req.user._id)) {
-        return next(new ForbiddenError('В доступе отказано'));
+      if (!movie) {
+        throw new NotFoundError('Фильм не найден');
       }
-      return movie
-        .deleteOne({ _id: movie._id })
-        .then(() => res.send({ message: 'Карточка фильма удалена' }));
+      res.send({ message: 'Фильм удален' });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err instanceof mongoose.Error.CastError) {
+        return next(new BadRequestError('Введены некорректные данные'));
+      }
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        return next(new BadRequestError('Введены некорректные данные'));
+      }
+      return next(err);
+    });
 };
 
 module.exports = { getMovies, createMovie, deleteMovie };
